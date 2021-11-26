@@ -1,5 +1,5 @@
 {
-  "name": "react-default",
+  "name": "goit-react-hw-04-hooks-images",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -30,13 +30,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tadden/goit-react-hw-03-image-finder.git"
+    "url": "git+https://github.com/tadden/goit-react-hw-04-hooks-images.git"
   },
   "author": "Ilja Kazanli <tadden12@gmail.com>",
   "bugs": {
-    "url": "https://github.com/tadden/goit-react-hw-03-image-finder/issues"
+    "url": "https://github.com/tadden/goit-react-hw-04-hooks-images/issues"
   },
-  "homepage": "https://tadden.github.io/goit-react-hw-03-image-finder",
+  "homepage": "https://tadden.github.io/goit-react-hw-04-hooks-images",
   "eslintConfig": {
     "extends": [
       "react-app",

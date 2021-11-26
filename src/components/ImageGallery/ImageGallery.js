@@ -1,116 +1,70 @@
-import React, { Component } from 'react';
+import  { useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
 import ImageGalleryItem from 'components/ImageGalleryItem';
 import { toast } from 'react-toastify';
-import Loader from 'react-loader-spinner';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import fetchImages from '../API/ImageApi';
 
- class ImageGallery extends Component {
-  state = {
-    pictures: null,
-    status: 'idle',
-  };
+export default function ImageGallery({
+  query,
+  page,
+  toggleModal,
+  setModalImage,
+  handleStatus,
+  status,
+}) {
+  
+  const [pictures, setPictures] = useState([]);
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevName = prevProps.pictureName;
-    const nextName = this.props.pictureName;
-    const prevPage = prevProps.page;
-    const nextPage = this.props.page;
-
-    if (prevName !== nextName) {
-      this.setState({ status: 'pending' });
-      fetchImages(nextName, 1)
-        .then(pictures => {
-          this.setState({
-            pictures: pictures.hits,
-            status: 'resolved',
-          });
-          this.props.setStatus(this.state.status);
-        })
-        .catch(error => {
-          this.setState({ error, status: 'rejected' });
-          this.props.setStatus(this.state.status);
-          toast.error(error.message);
-        });
+  useEffect(() => {
+    if (!query) {
+      return;
     }
+    handleStatus('pending');
+    fetchImages(query, page)
+      .then(result => {
+        if (page === 1) {
+          setPictures(result.hits);
+        } else {
+          setPictures(prevPictures => [
+            ...prevPictures,
+            ...result.hits,
+          ]);
+        }
+        handleStatus('resolved');
+      })
+      .catch(error => {
+        toast.error(error.message);
+      });
+  }, [query, page, handleStatus]);
 
-    if (prevPage !== nextPage) {
-      fetchImages(nextName, this.props.page)
-        .then(pictures => {
-          this.setState({
-            pictures: [
-              ...prevState.pictures,
-              ...pictures.hits,
-            ],
-            status: 'resolved',
-          });
-          this.props.setStatus(this.state.status);
-        })
-        .catch(error => {
-          this.setState({ error, status: 'rejected' });
-          this.props.setStatus(this.state.status);
-        });
-    }
-  }
-
-  handleImageClick = e => {
-    const { pictures } = this.state;
+  const handleImageClick = e => {
     const currentPicture = pictures.find(
       picture => picture.id === Number(e.currentTarget.id),
     );
     if (currentPicture) {
-      this.props.toggleModal();
-      this.props.setModalImage(
-        currentPicture.largeImageURL,
-      );
+      toggleModal();
+      setModalImage(currentPicture.largeImageURL);
     }
   };
 
-  render() {
-    const { pictures, status } = this.state;
-
-    if (status === 'idle') {
-      return <div></div>;
-    }
-
-    if (status === 'pending') {
-      return (
-        <Loader
-          type="ThreeDots"
-          color="#3f51b5"
-          height={50}
-          width={80}
-          timeout={3000}
+  return (
+    status !== 'idle' && (
+      <ul className={s.gallery}>
+        <ImageGalleryItem
+          pictures={pictures}
+          onClick={handleImageClick}
         />
-      );
-    }
-
-    if (status === 'rejected') {
-      return <p>No images</p>;
-    }
-
-    if (status === 'resolved') {
-      return (
-        <ul className={s.gallery}>
-          <ImageGalleryItem
-            pictures={pictures}
-            onClick={this.handleImageClick}
-          />
-        </ul>
-      );
-    }
-  }
+      </ul>
+    )
+  );
 }
 
-
 ImageGallery.propTypes = {
-    page: PropTypes.number.isRequired,
-    pictureName: PropTypes.string.isRequired,
-    setModalImage: PropTypes.func.isRequired,
-    setStatus: PropTypes.func.isRequired,
-    toggleModal: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  query: PropTypes.string.isRequired,
+  setModalImage: PropTypes.func.isRequired,
+  handleStatus: PropTypes.func.isRequired,
+  toggleModal: PropTypes.func.isRequired,
 };
-  
-export default ImageGallery;
